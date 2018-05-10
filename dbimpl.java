@@ -9,6 +9,12 @@ public interface dbimpl
    public static final String ENCODING = "utf-8";
 
    // fixed/variable lengths
+   public static final int NUMBER_RECORDS = 4000;
+   public static final int RECORDS_PER_BUCKET = 2;
+
+   public static final int NUMBER_OF_BUCKETS=NUMBER_RECORDS/RECORDS_PER_BUCKET;
+   
+   
    public static final int RECORD_SIZE = 297;
    public static final int RID_SIZE = 4;
    public static final int REGISTER_NAME_SIZE = 14;

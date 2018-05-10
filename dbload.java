@@ -66,6 +66,9 @@ public class dbload implements dbimpl
       byte[] RECORD = new byte[RECORD_SIZE];
       int outCount, pageCount, recCount;
       outCount = pageCount = recCount = 0;
+      
+      //ME
+      Bucket[] index = new Bucket[NUMBER_OF_BUCKETS];
 
       try
       {
@@ -81,6 +84,10 @@ public class dbload implements dbimpl
             // the number of bytes has exceed the pagesize
             outCount++;
             fos.write(RECORD);
+            
+            //ME
+            addIndex(index,entry[1],pageCount,recCount);
+            
             if ((outCount+1)*RECORD_SIZE > pagesize)
             {
                eofByteAddOn(fos, pagesize, outCount, pageCount);
@@ -167,6 +174,8 @@ public class dbload implements dbimpl
 
       return rec;
    }
+   
+
 
    // EOF padding to fill up remaining pagesize
    // * minus 4 bytes to add page number at end of file
@@ -185,5 +194,18 @@ public class dbload implements dbimpl
       ByteBuffer bBuffer = ByteBuffer.allocate(4);
       bBuffer.putInt(i);
       return bBuffer.array();
+   }
+   
+
+   public static void addIndex(Bucket[] index,String key,int pNum,int rNum) {
+	   int hCode = key.hashCode();
+	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
+	   
+	   IndexRecord rec = new IndexRecord(key,pNum,rNum);
+	   
+	   while(!index[bucketNum].addRecord(rec)) {
+		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
+		}
+	   
    }
 }
