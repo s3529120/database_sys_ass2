@@ -139,4 +139,82 @@ public class dbquery implements dbimpl
          System.out.println(record);
       }
    }
+   
+   // read heapfile by page
+   public void readIndex(String name, int pagesize)
+   {
+      File heapfile = new File(IDX_FNAME + pagesize);
+      //ME
+      
+      int intSize = 4;
+      int bucketCount = 0;
+      //int recCount = 0;
+      int recordLen = 0;
+      int rOffset=0;
+      int bucketsTraversed=0;
+      boolean isNextBucket = true;
+      boolean isNextRecord = true;
+      try
+      {
+         FileInputStream fis = new FileInputStream(heapfile);
+         // reading page by page
+         while (isNextBucket)
+         {
+            byte[] bBucket = new byte[BUCKET_SIZE];
+            fis.read(bBucket, 0, BUCKET_SIZE);
+
+            // reading by record, return true to read the next record
+            isNextRecord = true;
+            while (isNextRecord)
+            {
+               byte[] bRecord = new byte[INDEX_RECORD_SIZE];
+               byte[] bOff = new byte[intSize];
+               byte[] bKey = new byte[BN_NAME_SIZE];
+               try
+               {
+                  System.arraycopy(bBucket, recordLen, bRecord, 0, RECORD_SIZE);
+                  
+                  System.arraycopy(bRecord, 0, bKey, 0, BN_NAME_SIZE);
+                  System.arraycopy(bRecord, bRecord.length-intSize, bOff, 0, intSize);
+                  
+                  rOffset = ByteBuffer.wrap(bOff).getInt();
+                  /*if (rid != recCount)
+                  {
+                     isNextRecord = false;
+                  }
+                  else
+                  {
+                     printRecord(bRecord, name);
+                     recordLen += INDEX_RECORD_SIZE;
+                  }*/
+                  //recCount++;
+                  // if recordLen exceeds bucketsize, catch this to reset to next bucket
+               }
+               catch (ArrayIndexOutOfBoundsException e)
+               {
+                  isNextRecord = false;
+                  recordLen = 0;
+                  //recCount = 0;
+               }
+            }
+            // check to complete all pages
+            if (NUMBER_OF_BUCKETS == bucketsTraversed)
+            {
+               isNextBucket = false;
+            }
+            bucketCount++;
+            if(bucketCount>=NUMBER_OF_BUCKETS) {
+            	bucketCount=bucketCount%NUMBER_OF_BUCKETS;
+            }
+         }
+      }
+      catch (FileNotFoundException e)
+      {
+         System.out.println("File: " + HEAP_FNAME + pagesize + " not found.");
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+   }
 }

@@ -6,13 +6,17 @@ public interface dbimpl
 {
 
    public static final String HEAP_FNAME = "heap.";
+   public static final String IDX_FNAME = "index.";
    public static final String ENCODING = "utf-8";
 
    // fixed/variable lengths
    public static final int NUMBER_RECORDS = 4000;
    public static final int RECORDS_PER_BUCKET = 2;
-
+   public static final int TOTAL_RECORDS = 2542374;
    public static final int NUMBER_OF_BUCKETS=NUMBER_RECORDS/RECORDS_PER_BUCKET;
+   public static final int INDEX_RECORD_SIZE=204;
+   public static final int BUCKET_SIZE=INDEX_RECORD_SIZE*RECORDS_PER_BUCKET;
+   
    
    
    public static final int RECORD_SIZE = 297;
@@ -80,6 +84,11 @@ public interface dbimpl
                            + BN_STATE_NUM_SIZE
                            + BN_STATE_OF_REG_SIZE;
 
+   //ME
+   public static final int INDEX_OFFSET_OFFSET = BN_NAME_SIZE;
+   public static final int INDEX_OFFSET_SIZE = (TOTAL_RECORDS/RECORD_SIZE)/10;
+   public static final int INDEX_RECORD_OFFSET = INDEX_OFFSET_OFFSET+INDEX_OFFSET_SIZE;
+   
    public void readArguments(String args[]);
 
    public boolean isInteger(String s);

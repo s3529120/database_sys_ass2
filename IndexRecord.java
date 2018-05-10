@@ -26,4 +26,8 @@ public class IndexRecord {
 	public void setRecNo(int recNo) {
 		this.recNo = recNo;
 	}
+	
+	public int getOffset(int pageSize) {
+		return (pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE);
+	}
 }

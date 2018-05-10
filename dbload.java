@@ -8,10 +8,13 @@ import java.nio.ByteBuffer;
 
 public class dbload implements dbimpl
 {
+    //ME
+    private Bucket[] index;
     // initialize
    public static void main(String args[])
    {
       dbload load = new dbload();
+      
 
       // calculate load time
       long startTime = System.currentTimeMillis();
@@ -64,11 +67,9 @@ public class dbload implements dbimpl
       String nextLine = "";
       String stringDelimeter = "\t";
       byte[] RECORD = new byte[RECORD_SIZE];
-      int outCount, pageCount, recCount;
-      outCount = pageCount = recCount = 0;
+      int outCount, pageCount, recCount, bRecCount;
+      outCount = pageCount = recCount = bRecCount = 0;
       
-      //ME
-      Bucket[] index = new Bucket[NUMBER_OF_BUCKETS];
 
       try
       {
@@ -175,6 +176,22 @@ public class dbload implements dbimpl
       return rec;
    }
    
+// creates record by appending using array copy and then applying offset
+   // where neccessary
+   public byte[] createIndexRecord(byte[] rec, IndexRecord irec,int pageSize)
+          throws UnsupportedEncodingException 
+   {
+      byte[] ROFF = intToByteArray(irec.getOffset(pageSize));
+
+
+      copy(irec.getIndexKey(), BN_NAME_SIZE, 0, rec);
+
+
+      System.arraycopy(ROFF, 0, rec, 0, ROFF.length);
+
+      return rec;
+   }
+   
 
 
    // EOF padding to fill up remaining pagesize
@@ -207,5 +224,9 @@ public class dbload implements dbimpl
 		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
 		}
 	   
+   }
+   
+   public void initializeIndex() {
+	   index = new Bucket[NUMBER_OF_BUCKETS];
    }
 }
