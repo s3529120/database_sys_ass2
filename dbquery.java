@@ -154,9 +154,15 @@ public class dbquery implements dbimpl
       int bucketsTraversed=0;
       boolean isNextBucket = true;
       boolean isNextRecord = true;
+      
+      
       try
       {
          FileInputStream fis = new FileInputStream(heapfile);
+         long startPos = fis.getChannel().position();
+         
+         fis.getChannel().position((name.hashCode()%NUMBER_OF_BUCKETS)*BUCKET_SIZE);
+         
          // reading page by page
          while (isNextBucket)
          {
@@ -205,6 +211,8 @@ public class dbquery implements dbimpl
             bucketCount++;
             if(bucketCount>=NUMBER_OF_BUCKETS) {
             	bucketCount=bucketCount%NUMBER_OF_BUCKETS;
+                fis.getChannel().position(startPos);
+            	
             }
          }
       }
@@ -217,4 +225,5 @@ public class dbquery implements dbimpl
          e.printStackTrace();
       }
    }
+   
 }
