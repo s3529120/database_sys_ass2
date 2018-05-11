@@ -1,12 +1,14 @@
 
 public class IndexRecord {
-	private int pageNo;
-	private int recNo;
+	private int offset;
 	private String indexKey;
-	public IndexRecord(String key, int pageNo,int recNo) {
-		setIndexKey(key);
-		setRecNo(recNo);
-		setPageNo(pageNo);
+	public IndexRecord() {
+		setIndexKey("empty");
+		setOffset(-1);
+	}
+	
+	public void setValues(String key, int pageNo,int recNo,int pageSize) {
+		setOffset((pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE));
 	}
 	public String getIndexKey() {
 		return indexKey;
@@ -14,20 +16,13 @@ public class IndexRecord {
 	public void setIndexKey(String indexKey) {
 		this.indexKey = indexKey;
 	}
-	public int getPageNo() {
-		return pageNo;
-	}
-	public void setPageNo(int pageNo) {
-		this.pageNo = pageNo;
-	}
-	public int getRecNo() {
-		return recNo;
-	}
-	public void setRecNo(int recNo) {
-		this.recNo = recNo;
-	}
 	
-	public long getOffset(int pageSize) {
-		return (pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE);
+	public long getOffset() {
+		return offset;
+	}
+
+
+	public void setOffset(int offset) {
+		this.offset = offset;
 	}
 }

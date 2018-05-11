@@ -94,7 +94,7 @@ public class dbload implements dbimpl
             fos.write(RECORD);
             
             //ME
-            addIndex(index,entry[1],pageCount,recCount);
+            addIndex(index,entry[1],pageCount,recCount,pagesize);
             
             if ((outCount+1)*RECORD_SIZE > pagesize)
             {
@@ -139,12 +139,12 @@ public class dbload implements dbimpl
       System.out.println("Record total: " + recCount);
    }
    
-// read .csv file using buffered reader
+// write index file
    public void writeIndex(int pagesize)
    {
       File IDXfile = new File(IDX_FNAME + pagesize);
       FileOutputStream fos = null;
-      byte[] RECORD = new byte[RECORD_SIZE];
+      byte[] RECORD = new byte[INDEX_RECORD_SIZE];
       int bucketCount, recCount;
       bucketCount = recCount = 0;
       
@@ -240,7 +240,7 @@ public class dbload implements dbimpl
    public byte[] createIndexRecord(byte[] rec, IndexRecord irec,int pageSize)
           throws UnsupportedEncodingException 
    {
-      byte[] ROFF = longToByteArray(irec.getOffset(pageSize));
+      byte[] ROFF = longToByteArray(irec.getOffset());
 
 
       copy(irec.getIndexKey(), BN_NAME_SIZE, 0, rec);
@@ -281,13 +281,12 @@ public class dbload implements dbimpl
    }
    
 
-   public static void addIndex(Bucket[] index,String key,int pNum,int rNum) {
+   public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize) {
 	   int hCode = key.hashCode();
 	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
 	   
-	   IndexRecord rec = new IndexRecord(key,pNum,rNum);
 	   
-	   while(!index[bucketNum].addRecord(rec)) {
+	   while(!index[bucketNum].addRecord(key, pNum, rNum,pagesize)) {
 		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
 		}
 	   
