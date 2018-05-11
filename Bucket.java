@@ -1,6 +1,6 @@
 
 public class Bucket {
-	IndexRecord[] records;
+	private IndexRecord[] records;
 	public Bucket() {
 		records=new IndexRecord[dbimpl.RECORDS_PER_BUCKET];
 	}
@@ -13,5 +13,9 @@ public class Bucket {
 			}
 		}
 		return false;
+	}
+	
+	public IndexRecord getRecord(int pos) {
+		return records[pos];
 	}
 }

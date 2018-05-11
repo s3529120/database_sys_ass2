@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 public class dbload implements dbimpl
 {
     //ME
-    private Bucket[] index;
+    private static Bucket[] index;
     // initialize
    public static void main(String args[])
    {
@@ -20,6 +20,13 @@ public class dbload implements dbimpl
       long startTime = System.currentTimeMillis();
       load.readArguments(args);
       long endTime = System.currentTimeMillis();
+
+      System.out.println("Load time: " + (endTime - startTime) + "ms");
+      
+      // calculate load time
+      startTime = System.currentTimeMillis();
+      load.writeIndex(Integer.parseInt(args[1]));
+      endTime = System.currentTimeMillis();
 
       System.out.println("Load time: " + (endTime - startTime) + "ms");
    }
@@ -129,6 +136,58 @@ public class dbload implements dbimpl
          }
       }
       System.out.println("Page total: " + pageCount);
+      System.out.println("Record total: " + recCount);
+   }
+   
+// read .csv file using buffered reader
+   public void writeIndex(int pagesize)
+   {
+      File IDXfile = new File(IDX_FNAME + pagesize);
+      FileOutputStream fos = null;
+      byte[] RECORD = new byte[RECORD_SIZE];
+      int bucketCount, recCount;
+      bucketCount = recCount = 0;
+      
+
+      try
+      {
+         // create stream to write bytes to according page size
+         fos = new FileOutputStream(IDXfile);
+         // Write each bucket
+         for (int i=0;i<index.length;i++)
+         {
+        	 for(int j=0;j<RECORDS_PER_BUCKET;j++) {
+        		 RECORD = createIndexRecord(RECORD, index[i].getRecord(j), pagesize);
+            	fos.write(RECORD);
+
+                recCount++;
+        	 }
+            
+            }
+            bucketCount++;
+         
+      }
+      catch (FileNotFoundException e)
+      {
+         System.out.println("File:  not found.");
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      finally
+      {
+            try
+            {
+               
+               fos.close();
+            }
+            catch (IOException e)
+            {
+               e.printStackTrace();
+            }
+      }
+      System.out.println("Bucket total: " + bucketCount);
       System.out.println("Record total: " + recCount);
    }
 
