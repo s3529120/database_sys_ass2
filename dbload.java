@@ -23,12 +23,12 @@ public class dbload implements dbimpl
 
       System.out.println("Load time: " + (endTime - startTime) + "ms");
       
-      // calculate load time
+      // Index write time
       startTime = System.currentTimeMillis();
       load.writeIndex(Integer.parseInt(args[1]));
       endTime = System.currentTimeMillis();
 
-      System.out.println("Load time: " + (endTime - startTime) + "ms");
+      System.out.println("Index write time: " + (endTime - startTime) + "ms");
    }
 
    // reading command line arguments

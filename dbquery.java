@@ -141,7 +141,7 @@ public class dbquery implements dbimpl
    }
    
    // read heapfile by page
-   public void readIndex(String name, int pagesize)
+   public long readIndex(String name, int pagesize)
    {
       File heapfile = new File(IDX_FNAME + pagesize);
       //ME
@@ -154,6 +154,7 @@ public class dbquery implements dbimpl
       int bucketsTraversed=0;
       boolean isNextBucket = true;
       boolean isNextRecord = true;
+      String keyStr;
       
       
       try
@@ -183,7 +184,14 @@ public class dbquery implements dbimpl
                   System.arraycopy(bRecord, 0, bKey, 0, BN_NAME_SIZE);
                   System.arraycopy(bRecord, bRecord.length-longSize, bOff, 0, longSize);
                   
-                  rOffset = ByteBuffer.wrap(bOff).getInt();
+                  
+                  if(!((keyStr=new String(bKey)).compareTo("empty")==0)) {
+                	  if(keyStr.compareTo(name)==0) {
+                		  return ByteBuffer.wrap(bOff).getLong();
+                	  }
+                  }else {
+                	  return -1;
+                  }
                   /*if (rid != recCount)
                   {
                      isNextRecord = false;
