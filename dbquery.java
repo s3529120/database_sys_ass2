@@ -148,9 +148,7 @@ public class dbquery implements dbimpl
       
       int longSize = 8;
       int bucketCount = 0;
-      //int recCount = 0;
       int recordLen = 0;
-      int rOffset=0;
       int bucketsTraversed=0;
       boolean isNextBucket = true;
       boolean isNextRecord = true;
@@ -215,6 +213,7 @@ public class dbquery implements dbimpl
             if (NUMBER_OF_BUCKETS == bucketsTraversed)
             {
                isNextBucket = false;
+               fis.close();
             }
             bucketCount++;
             if(bucketCount>=NUMBER_OF_BUCKETS) {
@@ -232,6 +231,7 @@ public class dbquery implements dbimpl
       {
          e.printStackTrace();
       }
+      return -1;
    }
    
 }
