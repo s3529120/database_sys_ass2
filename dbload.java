@@ -181,7 +181,7 @@ public class dbload implements dbimpl
    public byte[] createIndexRecord(byte[] rec, IndexRecord irec,int pageSize)
           throws UnsupportedEncodingException 
    {
-      byte[] ROFF = intToByteArray(irec.getOffset(pageSize));
+      byte[] ROFF = longToByteArray(irec.getOffset(pageSize));
 
 
       copy(irec.getIndexKey(), BN_NAME_SIZE, 0, rec);
@@ -210,6 +210,14 @@ public class dbload implements dbimpl
    {
       ByteBuffer bBuffer = ByteBuffer.allocate(4);
       bBuffer.putInt(i);
+      return bBuffer.array();
+   }
+   
+// converts longs to a byte array of allocated size using bytebuffer
+   public byte[] longToByteArray(long l)
+   {
+      ByteBuffer bBuffer = ByteBuffer.allocate(8);
+      bBuffer.putLong(l);
       return bBuffer.array();
    }
    

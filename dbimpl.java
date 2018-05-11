@@ -14,7 +14,7 @@ public interface dbimpl
    public static final int RECORDS_PER_BUCKET = 2;
    public static final int TOTAL_RECORDS = 2542374;
    public static final int NUMBER_OF_BUCKETS=NUMBER_RECORDS/RECORDS_PER_BUCKET;
-   public static final int INDEX_RECORD_SIZE=204;
+   public static final int INDEX_RECORD_SIZE=208;
    public static final int BUCKET_SIZE=INDEX_RECORD_SIZE*RECORDS_PER_BUCKET;
    
    
@@ -85,9 +85,8 @@ public interface dbimpl
                            + BN_STATE_OF_REG_SIZE;
 
    //ME
-   public static final int INDEX_OFFSET_OFFSET = BN_NAME_SIZE;
-   public static final int INDEX_OFFSET_SIZE = (TOTAL_RECORDS/RECORD_SIZE)/10;
-   public static final int INDEX_RECORD_OFFSET = INDEX_OFFSET_OFFSET+INDEX_OFFSET_SIZE;
+   //public static final int INDEX_OFFSET_OFFSET = BN_NAME_SIZE;
+   //public static final int INDEX_RECORD_OFFSET = INDEX_OFFSET_OFFSET+8;
    
    public void readArguments(String args[]);
 

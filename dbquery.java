@@ -146,7 +146,7 @@ public class dbquery implements dbimpl
       File heapfile = new File(IDX_FNAME + pagesize);
       //ME
       
-      int intSize = 4;
+      int longSize = 8;
       int bucketCount = 0;
       //int recCount = 0;
       int recordLen = 0;
@@ -174,14 +174,14 @@ public class dbquery implements dbimpl
             while (isNextRecord)
             {
                byte[] bRecord = new byte[INDEX_RECORD_SIZE];
-               byte[] bOff = new byte[intSize];
+               byte[] bOff = new byte[longSize];
                byte[] bKey = new byte[BN_NAME_SIZE];
                try
                {
                   System.arraycopy(bBucket, recordLen, bRecord, 0, RECORD_SIZE);
                   
                   System.arraycopy(bRecord, 0, bKey, 0, BN_NAME_SIZE);
-                  System.arraycopy(bRecord, bRecord.length-intSize, bOff, 0, intSize);
+                  System.arraycopy(bRecord, bRecord.length-longSize, bOff, 0, longSize);
                   
                   rOffset = ByteBuffer.wrap(bOff).getInt();
                   /*if (rid != recCount)
@@ -218,7 +218,7 @@ public class dbquery implements dbimpl
       }
       catch (FileNotFoundException e)
       {
-         System.out.println("File: " + HEAP_FNAME + pagesize + " not found.");
+         System.out.println("File: " + IDX_FNAME + pagesize + " not found.");
       }
       catch (IOException e)
       {
