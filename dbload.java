@@ -13,8 +13,10 @@ public class dbload implements dbimpl
     // initialize
    public static void main(String args[])
    {
+	  
       dbload load = new dbload();
       
+      load.initializeIndex();
 
       // calculate load time
       long startTime = System.currentTimeMillis();
@@ -104,6 +106,7 @@ public class dbload implements dbimpl
                pageCount++;
             }
             recCount++;
+            System.out.println(recCount);
          }
       }
       catch (FileNotFoundException e)
@@ -145,8 +148,8 @@ public class dbload implements dbimpl
       File IDXfile = new File(IDX_FNAME + pagesize);
       FileOutputStream fos = null;
       byte[] RECORD = new byte[INDEX_RECORD_SIZE];
-      int bucketCount, recCount;
-      bucketCount = recCount = 0;
+      int bucketCount, recCount, x;
+      bucketCount = recCount = x =0;
       
 
       try
@@ -154,17 +157,19 @@ public class dbload implements dbimpl
          // create stream to write bytes to according page size
          fos = new FileOutputStream(IDXfile);
          // Write each bucket
-         for (int i=0;i<index.length;i++)
+         for (int i=0;i<NUMBER_OF_BUCKETS;i++)
          {
         	 for(int j=0;j<RECORDS_PER_BUCKET;j++) {
-        		 RECORD = createIndexRecord(RECORD, index[i].getRecord(j), pagesize);
+        		 RECORD =  createIndexRecord(RECORD, index[i].getRecord(j),pagesize);
             	fos.write(RECORD);
+            	System.out.println(x+"-"+new String(RECORD));
+            	x++;
 
                 recCount++;
         	 }
-            
+
+             bucketCount++;
             }
-            bucketCount++;
          
       }
       catch (FileNotFoundException e)
@@ -240,13 +245,13 @@ public class dbload implements dbimpl
    public byte[] createIndexRecord(byte[] rec, IndexRecord irec,int pageSize)
           throws UnsupportedEncodingException 
    {
-      byte[] ROFF = longToByteArray(irec.getOffset());
+      byte[] ROFF = intToByteArray(irec.getOffset());
 
 
       copy(irec.getIndexKey(), BN_NAME_SIZE, 0, rec);
 
 
-      System.arraycopy(ROFF, 0, rec, 0, ROFF.length);
+      System.arraycopy(ROFF, 0, rec, BN_NAME_SIZE, ROFF.length);
 
       return rec;
    }
@@ -272,21 +277,15 @@ public class dbload implements dbimpl
       return bBuffer.array();
    }
    
-// converts longs to a byte array of allocated size using bytebuffer
-   public byte[] longToByteArray(long l)
-   {
-      ByteBuffer bBuffer = ByteBuffer.allocate(8);
-      bBuffer.putLong(l);
-      return bBuffer.array();
-   }
+
    
 
    public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize) {
-	   int hCode = key.hashCode();
+	   int hCode = Math.abs(key.hashCode());
 	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
 	   
 	   
-	   while(!index[bucketNum].addRecord(key, pNum, rNum,pagesize)) {
+	   while(!index[bucketNum].addRecord(key,  pNum,  rNum, pagesize )) {
 		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
 		}
 	   
@@ -294,5 +293,8 @@ public class dbload implements dbimpl
    
    public void initializeIndex() {
 	   index = new Bucket[NUMBER_OF_BUCKETS];
+	   for (int i=0;i<NUMBER_OF_BUCKETS;i++) {
+		   index[i]=new Bucket();
+	   }
    }
 }

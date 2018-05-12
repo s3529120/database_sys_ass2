@@ -8,6 +8,7 @@ public class IndexRecord {
 	}
 	
 	public void setValues(String key, int pageNo,int recNo,int pageSize) {
+		indexKey = key;
 		setOffset((pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE));
 	}
 	public String getIndexKey() {
@@ -17,7 +18,7 @@ public class IndexRecord {
 		this.indexKey = indexKey;
 	}
 	
-	public long getOffset() {
+	public int getOffset() {
 		return offset;
 	}
 
