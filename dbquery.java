@@ -15,13 +15,10 @@ public class dbquery implements dbimpl
    {
       dbquery load = new dbquery();
       
-      for(String s : args) {
-    	  System.out.println(s);
-      }
 
       // calculate query time
       long startTime = System.currentTimeMillis();
-      load.readArguments(args);
+    	  load.readArguments(args);
       long endTime = System.currentTimeMillis();
 
       System.out.println("Query time: " + (endTime - startTime) + "ms");
@@ -60,91 +57,55 @@ public class dbquery implements dbimpl
       return isValidInt;
    }
 
-   // read heapfile by page
+
+   
+   /*Read heapfile for record matching given name
+    * @param name String name of business to find record for
+    * @param pagesize int size of pages in heapfile
+    */
    public void readHeap(String name, int pagesize)
    {
       File heapfile = new File(HEAP_FNAME + pagesize);
       int intSize = 4;
-      int pageCount = 0;
-      int recCount = 0;
-      int recordLen = 0;
       int rid = 0;
       boolean isNextPage = true;
       boolean isNextRecord = true;
       try
       {
+    	 //Initialize input stream from heapfile
          FileInputStream fis = new FileInputStream(heapfile);
          
-
+         //Initialize byte arrays
          byte[] bRecord = new byte[RECORD_SIZE];
          byte[] bRid = new byte[intSize];
          
+         //Get offset value of desired record
          int offset = readIndex(name,pagesize);
          
+         //CHeck if offset not found
          if(offset==-1) {
         	 System.out.println("Could not find record");
         	 System.exit(0);
          }
          
-         System.out.println("avail: "+fis.available()+"off: "+offset);
+         System.out.println("bucket: "+offset/pagesize+" record: "+(offset/pagesize)/RECORD_SIZE);
 
+         //Position channel to offset of desired record
          fis.getChannel().position(offset);
          
+         //Read in record
          fis.read(bRecord,  0,RECORD_SIZE);
+         
+         //Extract record od
          System.arraycopy(bRecord, 0, bRid, 0, intSize);
          rid = ByteBuffer.wrap(bRid).getInt();
          
          
          //System.out.println(new String(bRecord).trim().substring(RID_SIZE+REGISTER_NAME_SIZE, RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE));
 
+         //Print record
          printRecord(bRecord, name);
          
-         // reading page by page
-         /*while (isNextPage)
-         {
-            byte[] bPage = new byte[pagesize];
-            byte[] bPageNum = new byte[intSize];
-            fis.read(bPage, 0, pagesize);
-            System.arraycopy(bPage, bPage.length-intSize, bPageNum, 0, intSize);
-
-            // reading by record, return true to read the next record
-            isNextRecord = true;
-            while (isNextRecord)
-            {
-               byte[] bRecord = new byte[RECORD_SIZE];
-               byte[] bRid = new byte[intSize];
-               try
-               {
-                  System.arraycopy(bPage, recordLen, bRecord, 0, RECORD_SIZE);
-                  System.arraycopy(bRecord, 0, bRid, 0, intSize);
-                  rid = ByteBuffer.wrap(bRid).getInt();
-                  if (rid != recCount)
-                  {
-                     isNextRecord = false;
-                  }
-                  else
-                  {
-                     printRecord(bRecord, name);
-                     recordLen += RECORD_SIZE;
-                  }
-                  recCount++;
-                  // if recordLen exceeds pagesize, catch this to reset to next page
-               }
-               catch (ArrayIndexOutOfBoundsException e)
-               {
-                  isNextRecord = false;
-                  recordLen = 0;
-                  recCount = 0;
-                  rid = 0;
-               }
-            }
-            // check to complete all pages
-            if (ByteBuffer.wrap(bPageNum).getInt() != pageCount)
-            {
-               isNextPage = false;
-            }
-            pageCount++;
-         }*/
       }
       catch (FileNotFoundException e)
       {
@@ -160,22 +121,28 @@ public class dbquery implements dbimpl
    public void printRecord(byte[] rec, String input)
    {
       String record = new String(rec);
+      byte[] bRid = new byte[4];
+      int rid;
+      System.arraycopy(rec, 0, bRid, 0, 4);
+      rid = ByteBuffer.wrap(bRid).getInt();
       String BN_NAME = record
                          .substring(RID_SIZE+REGISTER_NAME_SIZE,
                           RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
-      System.out.println(BN_NAME+"was found using index!");
-      if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
+      //if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
       {
-         System.out.println(BN_NAME+"was found using index!");
+         System.out.println("Index match found:");
+         System.out.println(rid+": "+BN_NAME);
       }
    }
    
-   // read heapfile by page
+   /*Take search key and find index for matching record
+    * @param name String Search key
+    * @param int pagesize size of pages in heap
+    * @return Offset of record matching search key in heap
+    */
    public int readIndex(String name, int pagesize)
    {
       File heapfile = new File(IDX_FNAME + pagesize);
-      //ME
-      
       int intSize = 4;
       int bucketCount = 0;
       int recordLen = 0;
@@ -187,87 +154,86 @@ public class dbquery implements dbimpl
       
       try
       {
+    	  //Initialize input stream
          FileInputStream fis = new FileInputStream(heapfile);
+         
+         //Set start position incase search reaches end of index
          long startPos = fis.getChannel().position();
          
+         //Calculate hash
          int hashedTo = Math.abs((name.hashCode())%NUMBER_OF_BUCKETS)*BUCKET_SIZE;
          
+         //Position over hash value bucket
          fis.getChannel().position(hashedTo);
          bucketCount=hashedTo/BUCKET_SIZE;
          
-         // reading page by page
+         // reading in by bucket
          while (isNextBucket)
          {
-        	 //System.out.println(bucketCount);
+        	//Initialize byte array to hold bucket
             byte[] bBucket = new byte[BUCKET_SIZE];
             
+            //Check if end of index reached
             if(fis.available()<BUCKET_SIZE) {
           	  fis.getChannel().position(startPos);
             }
             
+            //Read in bucket
             fis.read(bBucket, 0, BUCKET_SIZE);
 
-            // reading by record, return true to read the next record
+            //Check records inside bucket for match key
             isNextRecord = true;
             while (isNextRecord)
             {
+            	//Initialize byte arrays
                byte[] bRecord = new byte[INDEX_RECORD_SIZE];
                byte[] bOff = new byte[intSize];
                byte[] bKey = new byte[BN_NAME_SIZE];
                try
                {
+            	  //Extract record from bucket
                   System.arraycopy(bBucket, recordLen, bRecord, 0, INDEX_RECORD_SIZE);
                   
+                  //Extract key and offset from record
                   System.arraycopy(bRecord, 0, bKey, 0, BN_NAME_SIZE);
                   System.arraycopy(bRecord, bRecord.length-intSize, bOff, 0, intSize);
                   System.out.println("-"+name+"-"+new String(bKey,ENCODING).trim()+"-");
-                  System.out.println("-"+name+"-"+new String(bKey,ENCODING).trim()+"-");
-                  //System.exit(1);
                   
                   
-                  
+                  //Check if index is empty
                   if(!((keyStr=new String(bKey).trim()).compareTo("empty")==0)) {
+                	  //CHeck for match
                 	  if(keyStr.equals(name)) {
-                		  System.out.println("Found");
+                		  //Return stored offset
                 		  return ByteBuffer.wrap(bOff).getInt();
                 	  }
                   }
-                  /*if (rid != recCount)
-                  {
-                     isNextRecord = false;
+                  //Return -1 for not not if empty record reached
+                  else {
+                	  System.out.println("Record not found.");
                   }
-                  else
-                  {*/
-                     //printRecord(bRecord, name);
-                     recordLen += INDEX_RECORD_SIZE;
-                  //}
-                  //recCount++;
-                  // if recordLen exceeds bucketsize, catch this to reset to next bucket
+                  //Increment record read offset
+                  recordLen += INDEX_RECORD_SIZE; 
+                  
                }
+               
+               //If end of bucket reached move to next
                catch (ArrayIndexOutOfBoundsException e)
                {
                   isNextRecord = false;
                   recordLen = 0;
-                  //recCount = 0;
                }
 
                
             }
             bucketsTraversed++;
-            // check to complete all pages
-               if (NUMBER_OF_BUCKETS < bucketsTraversed)
-               {
-                  isNextBucket = false;
-                  fis.close();
-               }
-               System.out.println("traversed: "+bucketsTraversed);
-               //bucketCount++;
-               //if(bucketCount==NUMBER_OF_BUCKETS) {
-               	//bucketCount=0;
-                   //fis.getChannel().position(startPos);
-               //}
-            
-         }
+            //Check if all buckets traversed 
+            //(would only happen if change to fill all record slots)
+            if (NUMBER_OF_BUCKETS < bucketsTraversed)
+            	isNextBucket = false;
+            	fis.close();
+            }
+         
       }
       catch (FileNotFoundException e)
       {

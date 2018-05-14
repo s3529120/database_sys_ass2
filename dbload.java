@@ -142,28 +142,34 @@ public class dbload implements dbimpl
       System.out.println("Record total: " + recCount);
    }
    
-// write index file
+   /*Write Index file
+    * @param pagesize int size of heapfile pages
+    */
    public void writeIndex(int pagesize)
    {
       File IDXfile = new File(IDX_FNAME + pagesize);
       FileOutputStream fos = null;
       byte[] RECORD = new byte[INDEX_RECORD_SIZE];
-      int bucketCount, recCount, x;
-      bucketCount = recCount = x =0;
+      int bucketCount, recCount;
+      bucketCount = recCount = 0;
       
 
       try
       {
          // create stream to write bytes to according page size
          fos = new FileOutputStream(IDXfile);
+         
          // Write each bucket
          for (int i=0;i<NUMBER_OF_BUCKETS;i++)
          {
+        	 //Create and write each record
         	 for(int j=0;j<RECORDS_PER_BUCKET;j++) {
-        		 RECORD =  createIndexRecord(RECORD, index[i].getRecord(j),pagesize);
+        		 
+        		//Create record
+        		RECORD =  createIndexRecord(RECORD, index[i].getRecord(j),pagesize);
+        		
+        		//Write record
             	fos.write(RECORD);
-            	System.out.println(x+"-"+new String(RECORD));
-            	x++;
 
                 recCount++;
         	 }
@@ -174,7 +180,7 @@ public class dbload implements dbimpl
       }
       catch (FileNotFoundException e)
       {
-         System.out.println("File:  not found.");
+         System.out.println("File not found.");
       }
       catch (Exception e)
       {
@@ -184,7 +190,7 @@ public class dbload implements dbimpl
       {
             try
             {
-               
+               //CLose file
                fos.close();
             }
             catch (IOException e)
@@ -192,6 +198,9 @@ public class dbload implements dbimpl
                e.printStackTrace();
             }
       }
+      
+      //Print completion message
+      System.out.println("Indexing completed");
       System.out.println("Bucket total: " + bucketCount);
       System.out.println("Record total: " + recCount);
    }
@@ -240,17 +249,22 @@ public class dbload implements dbimpl
       return rec;
    }
    
-// creates record by appending using array copy and then applying offset
-   // where neccessary
+   /*Creates a byte array of index record information
+    * @param rec byte[] array in which to store record
+    * @param IndexRecord irec IndexRecord to convert
+    * @param pagesize int size of heapfile pages
+    * @return record as byte array
+    */
    public byte[] createIndexRecord(byte[] rec, IndexRecord irec,int pageSize)
           throws UnsupportedEncodingException 
    {
+	  //Convert offset to byte array
       byte[] ROFF = intToByteArray(irec.getOffset());
 
-
+      //Add key to byte array
       copy(irec.getIndexKey(), BN_NAME_SIZE, 0, rec);
-
-
+	
+      //Add offset to byte array
       System.arraycopy(ROFF, 0, rec, BN_NAME_SIZE, ROFF.length);
 
       return rec;
@@ -279,7 +293,13 @@ public class dbload implements dbimpl
    
 
    
-
+   /*Add record to index using linear porobing
+    * @param index Bucket[] Array holding index before write
+    * @param key Sting index key business name
+    * @param pNum int page number of record
+    * @param rNum record number within
+    * @param pagesize int size of pages in heapfile
+    */
    public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize) {
 	   int hCode = Math.abs(key.hashCode());
 	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
@@ -291,8 +311,14 @@ public class dbload implements dbimpl
 	   
    }
    
+   /*Imitialize bucket and indexrecord objects for index file
+    * 
+    */
    public void initializeIndex() {
+	   //Create array of buckets to form index
 	   index = new Bucket[NUMBER_OF_BUCKETS];
+	   
+	   //Initialize records within buckets
 	   for (int i=0;i<NUMBER_OF_BUCKETS;i++) {
 		   index[i]=new Bucket();
 	   }
