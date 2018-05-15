@@ -18,7 +18,9 @@ public class dbquery implements dbimpl
 
       // calculate query time
       long startTime = System.currentTimeMillis();
+      for(int i=0;i<25;i++) {
     	  load.readArguments(args);
+      }
       long endTime = System.currentTimeMillis();
 
       System.out.println("Query time: " + (endTime - startTime) + "ms");
@@ -88,7 +90,7 @@ public class dbquery implements dbimpl
         	 System.exit(0);
          }
          
-         System.out.println("bucket: "+offset/pagesize+" record: "+(offset/pagesize)/RECORD_SIZE);
+         System.out.println("Record found:");
 
          //Position channel to offset of desired record
          fis.getChannel().position(offset);
@@ -128,23 +130,7 @@ public class dbquery implements dbimpl
          System.out.println(record);
       }
    }
-   // returns records containing the argument text from shell
-   public void printdRecord(byte[] rec, String input)
-   {
-      String record = new String(rec);
-      byte[] bRid = new byte[4];
-      int rid;
-      System.arraycopy(rec, 0, bRid, 0, 4);
-      rid = ByteBuffer.wrap(bRid).getInt();
-      String BN_NAME = record
-                         .substring(RID_SIZE+REGISTER_NAME_SIZE,
-                          RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
-      //if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
-      {
-         System.out.println("Index match found:");
-         System.out.println(rid+": "+BN_NAME);
-      }
-   }
+   
    
    /*Take search key and find index for matching record
     * @param name String Search key
@@ -221,7 +207,7 @@ public class dbquery implements dbimpl
                   }
                   //Return -1 for not not if empty record reached
                   else {
-                	  System.out.println("Record not found.");
+                	  //System.out.println("Record not found.");
                   }
                   //Increment record read offset
                   recordLen += INDEX_RECORD_SIZE; 
@@ -242,7 +228,7 @@ public class dbquery implements dbimpl
             //(would only happen if change to fill all record slots)
             if (NUMBER_OF_BUCKETS < bucketsTraversed)
             	isNextBucket = false;
-            	fis.close();
+            	//fis.close();
             }
          
       }

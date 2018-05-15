@@ -25,6 +25,9 @@ public class dbload implements dbimpl
 
       System.out.println("Load time: " + (endTime - startTime) + "ms");
       
+
+      System.out.println("Writing index file");
+      
       // Index write time
       startTime = System.currentTimeMillis();
       load.writeIndex(Integer.parseInt(args[1]));
@@ -96,8 +99,11 @@ public class dbload implements dbimpl
             outCount++;
             fos.write(RECORD);
             
-            //ME
+            /* Add search key and offset of record to index
+             * @author Thomas Higgins
+             */
             addIndex(index,entry[1],pageCount,recCount,pagesize,pos);
+            
             
             if ((outCount+1)*RECORD_SIZE > pagesize)
             {
@@ -107,7 +113,6 @@ public class dbload implements dbimpl
                pageCount++;
             }
             recCount++;
-            System.out.println(recCount);
          }
       }
       catch (FileNotFoundException e)
@@ -143,7 +148,7 @@ public class dbload implements dbimpl
       System.out.println("Record total: " + recCount);
    }
    
-   /*Write Index file
+   /*Write Index file from index array
     * @param pagesize int size of heapfile pages
     */
    public void writeIndex(int pagesize)
@@ -169,12 +174,11 @@ public class dbload implements dbimpl
         		//Create record
         		RECORD =  createIndexRecord(RECORD, index[i].getRecord(j),pagesize);
         		
-        		//Write record
+        		//Write record to index file
             	fos.write(RECORD);
 
                 recCount++;
         	 }
-
              bucketCount++;
             }
          
@@ -272,9 +276,6 @@ public class dbload implements dbimpl
    }
    
    
-   
-
-
    // EOF padding to fill up remaining pagesize
    // * minus 4 bytes to add page number at end of file
    public void eofByteAddOn(FileOutputStream fos, int pSize, int out, int pCount) 
@@ -294,7 +295,7 @@ public class dbload implements dbimpl
       return bBuffer.array();
    }
    
-// converts ints to a byte array of allocated size using bytebuffer
+   //Converts longs to byte array (copy of intToByteArray with modification)
    public byte[] longToByteArray(long i)
    {
       ByteBuffer bBuffer = ByteBuffer.allocate(8);
@@ -315,16 +316,17 @@ public class dbload implements dbimpl
 	   int hCode = Math.abs(key.hashCode());
 	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
 	   
-	   
+	   /*Linear probing insertion checks desired bucket for space and
+	    * continues through buckets until empty slot is found at which
+	    * point record is inserted into slot
+	    */
 	   while(!index[bucketNum].addRecord(key,  pNum,  rNum, pagesize,pos )) {
 		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
 		}
 	   
    }
    
-   /*Imitialize bucket and indexrecord objects for index file
-    * 
-    */
+   //Initialize Bucket and IndexRecord objects for index file
    public void initializeIndex() {
 	   //Create array of buckets to form index
 	   index = new Bucket[NUMBER_OF_BUCKETS];
