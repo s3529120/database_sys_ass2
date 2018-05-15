@@ -19,13 +19,13 @@ public class Bucket {
 	 * @param pagesize int Size of the pages in heapfile
 	 * @return Boolean indicator if record is available
 	 */
-	public boolean addRecord(String key, int pageNo,int recNo,int pagesize,long pos) {
+	public boolean addRecord(String key, int pageNo,int recNo,int pagesize) {
 		//Iterate through records in bucket
 		for(int i=0;i<dbimpl.RECORDS_PER_BUCKET;i++) {
 			//Check if filled
 			if(records[i].getOffset()==-1) {
 				//Wriye if empty
-				records[i].setValues(key,pageNo,recNo,pagesize,pos);
+				records[i].setValues(key,pageNo,recNo,pagesize);
 				return true;
 			}
 		}

@@ -79,8 +79,8 @@ public class dbload implements dbimpl
       String nextLine = "";
       String stringDelimeter = "\t";
       byte[] RECORD = new byte[RECORD_SIZE];
-      int outCount, pageCount, recCount, bRecCount;
-      outCount = pageCount = recCount = bRecCount = 0;
+      int outCount, pageCount, recCount, bRecCount,posInPage;
+      outCount = pageCount = recCount = bRecCount = posInPage = 0;
       
 
       try
@@ -102,7 +102,7 @@ public class dbload implements dbimpl
             /* Add search key and offset of record to index
              * @author Thomas Higgins
              */
-            addIndex(index,entry[1],pageCount,recCount,pagesize,pos);
+            addIndex(index,entry[1].trim(),pageCount,posInPage,pagesize);
             
             
             if ((outCount+1)*RECORD_SIZE > pagesize)
@@ -111,6 +111,13 @@ public class dbload implements dbimpl
                //reset counter to start newpage
                outCount = 0;
                pageCount++;
+               
+               //Record position in page back to 0
+               posInPage=0;
+            }
+            //Record position in page increment
+            else {
+                posInPage++;
             }
             recCount++;
          }
@@ -312,7 +319,7 @@ public class dbload implements dbimpl
     * @param rNum record number within
     * @param pagesize int size of pages in heapfile
     */
-   public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize,long pos) {
+   public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize) {
 	   int hCode = Math.abs(key.hashCode());
 	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
 	   
@@ -320,7 +327,7 @@ public class dbload implements dbimpl
 	    * continues through buckets until empty slot is found at which
 	    * point record is inserted into slot
 	    */
-	   while(!index[bucketNum].addRecord(key,  pNum,  rNum, pagesize,pos )) {
+	   while(!index[bucketNum].addRecord(key,  pNum,  rNum, pagesize)) {
 		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
 		}
 	   

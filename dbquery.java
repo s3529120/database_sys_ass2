@@ -18,9 +18,7 @@ public class dbquery implements dbimpl
 
       // calculate query time
       long startTime = System.currentTimeMillis();
-      for(int i=0;i<25;i++) {
-    	  load.readArguments(args);
-      }
+      load.readArguments(args);
       long endTime = System.currentTimeMillis();
 
       System.out.println("Query time: " + (endTime - startTime) + "ms");
@@ -68,10 +66,6 @@ public class dbquery implements dbimpl
    public void readHeap(String name, int pagesize)
    {
       File heapfile = new File(HEAP_FNAME + pagesize);
-      int intSize = 4;
-      int rid = 0;
-      boolean isNextPage = true;
-      boolean isNextRecord = true;
       try
       {
     	 //Initialize input stream from heapfile
@@ -79,7 +73,7 @@ public class dbquery implements dbimpl
          
          //Initialize byte arrays
          byte[] bRecord = new byte[RECORD_SIZE];
-         byte[] bRid = new byte[intSize];
+         //byte[] bRid = new byte[intSize];
          
          //Get offset value of desired record
          long offset = readIndex(name,pagesize);
@@ -98,16 +92,10 @@ public class dbquery implements dbimpl
          //Read in record
          fis.read(bRecord,  0,RECORD_SIZE);
          
-         //Extract record od
-         System.arraycopy(bRecord, 0, bRid, 0, intSize);
-         rid = ByteBuffer.wrap(bRid).getInt();
-         
-         
-         //System.out.println(new String(bRecord).trim().substring(RID_SIZE+REGISTER_NAME_SIZE, RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE));
-
          //Print record
          printRecord(bRecord, name);
          
+         fis.close();
       }
       catch (FileNotFoundException e)
       {
@@ -140,8 +128,7 @@ public class dbquery implements dbimpl
    public long readIndex(String name, int pagesize)
    {
       File heapfile = new File(IDX_FNAME + pagesize);
-      int intSize = 8;
-      int bucketCount = 0;
+      int longSize = 8;
       int recordLen = 0;
       int bucketsTraversed=0;
       boolean isNextBucket = true;
@@ -162,7 +149,6 @@ public class dbquery implements dbimpl
          
          //Position over hash value bucket
          fis.getChannel().position(hashedTo);
-         bucketCount=hashedTo/BUCKET_SIZE;
          
          // reading in by bucket
          while (isNextBucket)
@@ -184,7 +170,7 @@ public class dbquery implements dbimpl
             {
             	//Initialize byte arrays
                byte[] bRecord = new byte[INDEX_RECORD_SIZE];
-               byte[] bOff = new byte[intSize];
+               byte[] bOff = new byte[longSize];
                byte[] bKey = new byte[BN_NAME_SIZE];
                try
                {
@@ -193,21 +179,23 @@ public class dbquery implements dbimpl
                   
                   //Extract key and offset from record
                   System.arraycopy(bRecord, 0, bKey, 0, BN_NAME_SIZE);
-                  System.arraycopy(bRecord, bRecord.length-intSize, bOff, 0, intSize);
-                  System.out.println("-"+name+"-"+new String(bKey,ENCODING).trim()+"-");
-                  
-                  
+                  System.arraycopy(bRecord, bRecord.length-longSize, bOff, 0, longSize);
+                 
                   //Check if index is empty
                   if(!((keyStr=new String(bKey).trim()).compareTo("empty")==0)) {
                 	  //CHeck for match
                 	  if(keyStr.equals(name)) {
+                		  //CLose input stream
+                		  fis.close();
+                		  
                 		  //Return stored offset
                 		  return ByteBuffer.wrap(bOff).getLong();
                 	  }
                   }
                   //Return -1 for not not if empty record reached
                   else {
-                	  //System.out.println("Record not found.");
+                	  fis.close();
+                	  return -1;
                   }
                   //Increment record read offset
                   recordLen += INDEX_RECORD_SIZE; 
@@ -227,10 +215,11 @@ public class dbquery implements dbimpl
             //Check if all buckets traversed 
             //(would only happen if change to fill all record slots)
             if (NUMBER_OF_BUCKETS < bucketsTraversed)
+            {
             	isNextBucket = false;
-            	//fis.close();
+                fis.close();
             }
-         
+         }
       }
       catch (FileNotFoundException e)
       {

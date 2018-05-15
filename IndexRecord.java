@@ -16,10 +16,9 @@ public class IndexRecord {
 	 *  @param  recNo int position of record to be indexed in specified page
 	 *  @param pagesize int Size of pages in heapfile
 	 */
-	public void setValues(String key, int pageNo,int recNo,int pageSize,long pos) {
+	public void setValues(String key, int pageNo,int recNo,int pageSize) {
 		setIndexKey(key);
-		//setOffset((pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE));
-		setOffset(pos);
+		setOffset((pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE));
 	}
 	
 	//Index key accessor
