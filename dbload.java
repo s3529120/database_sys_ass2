@@ -88,6 +88,7 @@ public class dbload implements dbimpl
          // read line by line
          while ((line = br.readLine()) != null)
          {
+        	 long pos = fos.getChannel().position();
             String[] entry = line.split(stringDelimeter, -1);
             RECORD = createRecord(RECORD, entry, outCount);
             // outCount is to count record and reset everytime
@@ -96,7 +97,7 @@ public class dbload implements dbimpl
             fos.write(RECORD);
             
             //ME
-            addIndex(index,entry[1],pageCount,recCount,pagesize);
+            addIndex(index,entry[1],pageCount,recCount,pagesize,pos);
             
             if ((outCount+1)*RECORD_SIZE > pagesize)
             {
@@ -259,7 +260,7 @@ public class dbload implements dbimpl
           throws UnsupportedEncodingException 
    {
 	  //Convert offset to byte array
-      byte[] ROFF = intToByteArray(irec.getOffset());
+      byte[] ROFF = longToByteArray(irec.getOffset());
 
       //Add key to byte array
       copy(irec.getIndexKey(), BN_NAME_SIZE, 0, rec);
@@ -269,6 +270,8 @@ public class dbload implements dbimpl
 
       return rec;
    }
+   
+   
    
 
 
@@ -291,6 +294,14 @@ public class dbload implements dbimpl
       return bBuffer.array();
    }
    
+// converts ints to a byte array of allocated size using bytebuffer
+   public byte[] longToByteArray(long i)
+   {
+      ByteBuffer bBuffer = ByteBuffer.allocate(8);
+      bBuffer.putLong(i);
+      return bBuffer.array();
+   }
+   
 
    
    /*Add record to index using linear porobing
@@ -300,12 +311,12 @@ public class dbload implements dbimpl
     * @param rNum record number within
     * @param pagesize int size of pages in heapfile
     */
-   public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize) {
+   public static void addIndex(Bucket[] index,String key,int pNum,int rNum,int pagesize,long pos) {
 	   int hCode = Math.abs(key.hashCode());
 	   int bucketNum = hCode%NUMBER_OF_BUCKETS;
 	   
 	   
-	   while(!index[bucketNum].addRecord(key,  pNum,  rNum, pagesize )) {
+	   while(!index[bucketNum].addRecord(key,  pNum,  rNum, pagesize,pos )) {
 		   bucketNum=(bucketNum+1)%NUMBER_OF_BUCKETS;	   
 		}
 	   

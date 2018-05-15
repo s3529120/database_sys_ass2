@@ -14,7 +14,7 @@ public interface dbimpl
    public static final int NUMBER_RECORDS = (int) (TOTAL_RECORDS/0.6);
    public static final int RECORDS_PER_BUCKET = 2;
    public static final int NUMBER_OF_BUCKETS=NUMBER_RECORDS/RECORDS_PER_BUCKET;
-   public static final int INDEX_RECORD_SIZE=204;
+   public static final int INDEX_RECORD_SIZE=208;
    public static final int BUCKET_SIZE=INDEX_RECORD_SIZE*RECORDS_PER_BUCKET;
    
    

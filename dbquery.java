@@ -80,7 +80,7 @@ public class dbquery implements dbimpl
          byte[] bRid = new byte[intSize];
          
          //Get offset value of desired record
-         int offset = readIndex(name,pagesize);
+         long offset = readIndex(name,pagesize);
          
          //CHeck if offset not found
          if(offset==-1) {
@@ -116,9 +116,20 @@ public class dbquery implements dbimpl
          e.printStackTrace();
       }
    }
-
    // returns records containing the argument text from shell
    public void printRecord(byte[] rec, String input)
+   {
+      String record = new String(rec);
+      String BN_NAME = record
+                         .substring(RID_SIZE+REGISTER_NAME_SIZE,
+                          RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
+      if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
+      {
+         System.out.println(record);
+      }
+   }
+   // returns records containing the argument text from shell
+   public void printdRecord(byte[] rec, String input)
    {
       String record = new String(rec);
       byte[] bRid = new byte[4];
@@ -140,10 +151,10 @@ public class dbquery implements dbimpl
     * @param int pagesize size of pages in heap
     * @return Offset of record matching search key in heap
     */
-   public int readIndex(String name, int pagesize)
+   public long readIndex(String name, int pagesize)
    {
       File heapfile = new File(IDX_FNAME + pagesize);
-      int intSize = 4;
+      int intSize = 8;
       int bucketCount = 0;
       int recordLen = 0;
       int bucketsTraversed=0;
@@ -205,7 +216,7 @@ public class dbquery implements dbimpl
                 	  //CHeck for match
                 	  if(keyStr.equals(name)) {
                 		  //Return stored offset
-                		  return ByteBuffer.wrap(bOff).getInt();
+                		  return ByteBuffer.wrap(bOff).getLong();
                 	  }
                   }
                   //Return -1 for not not if empty record reached

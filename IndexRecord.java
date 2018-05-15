@@ -1,6 +1,6 @@
 
 public class IndexRecord {
-	private int offset;
+	private long offset;
 	private String indexKey;
 	
 	//Constructor
@@ -16,9 +16,10 @@ public class IndexRecord {
 	 *  @param  recNo int position of record to be indexed in specified page
 	 *  @param pagesize int Size of pages in heapfile
 	 */
-	public void setValues(String key, int pageNo,int recNo,int pageSize) {
+	public void setValues(String key, int pageNo,int recNo,int pageSize,long pos) {
 		setIndexKey(key);
-		setOffset((pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE));
+		//setOffset((pageNo*pageSize)+(recNo*dbimpl.RECORD_SIZE));
+		setOffset(pos);
 	}
 	
 	//Index key accessor
@@ -32,13 +33,13 @@ public class IndexRecord {
 	}
 	
 	//Offset accessor
-	public int getOffset() {
+	public long getOffset() {
 		return offset;
 	}
 
 
 	//Offset mutator
-	public void setOffset(int offset) {
+	public void setOffset(long offset) {
 		this.offset = offset;
 	}
 }
